@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+  kafka-dataeng-jupyter:
+    container_name: ${JUPYTER_CONTAINER_NAME}
+    hostname: ${JUPYTER_CONTAINER_NAME}
+    image: streaming/jupyter
+    environment:
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+    ports:
+      - ${JUPYTER_PORT}:8888
+      - 4040:4040
+      - 4041:4041
+    volumes:
+      - ../:/resources
+      - ../notebooks:/home/jovyan/
+      - ../protobuf:/home/jovyan/protobuf
+
+networks:
+  default:
+    name: streaming-network
+    external: true
