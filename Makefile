@@ -9,7 +9,8 @@ docker-build:
 	@docker build -t streaming/spark -f ./docker/Dockerfile.spark .
 	@echo '__________________________________________________________'
 	@docker build -t streaming/jupyter -f ./docker/Dockerfile.jupyter .
-	@chmod 777 temp/
+	@mkdir tmp
+	@chmod 777 tmp/
 
 kafka: kafka-create kafka-create-topic
 
