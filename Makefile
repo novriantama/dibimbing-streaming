@@ -9,17 +9,7 @@ docker-build:
 	@docker build -t streaming/spark -f ./docker/Dockerfile.spark .
 	@echo '__________________________________________________________'
 	@docker build -t streaming/jupyter -f ./docker/Dockerfile.jupyter .
-
-jupyter:
-	@echo '__________________________________________________________'
-	@echo 'Creating Jupyter Notebook Cluster at http://localhost:${JUPYTER_PORT} ...'
-	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-jupyter.yml --env-file .env up -d
-	@echo 'Created...'
-	@echo 'Processing token...'
-	@sleep 20
-	@docker logs ${JUPYTER_CONTAINER_NAME} 2>&1 | grep '\?token\=' -m 1 | cut -d '=' -f2
-	@echo '==========================================================='
+	@chmod 777 temp/
 
 kafka: kafka-create kafka-create-topic
 
@@ -40,7 +30,7 @@ kafka-create-topic:
 		--bootstrap-server ${KAFKA_HOST}:9092 \
 		--topic ${KAFKA_TOPIC_NAME}
 
-postgres: postgres-create postgres-create-warehouse
+postgres: postgres-create postgres-create-warehouse postgres-create-table
 
 postgres-create:
 	@docker compose -f ./docker/docker-compose-postgres.yml --env-file .env up -d
@@ -61,9 +51,32 @@ postgres-create-warehouse:
 	@docker exec -it ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f sql/warehouse-ddl.sql
 	@echo '==========================================================='
 
+postgres-create-table:
+	@echo '__________________________________________________________'
+	@echo 'Creating tables...'
+	@echo '_________________________________________'
+	@docker exec -it ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DW_DB} -f sql/retail-ddl.sql
+	@echo '==========================================================='
+
 spark:
 	@echo '__________________________________________________________'
 	@echo 'Creating Spark Cluster ...'
 	@echo '__________________________________________________________'
 	@docker compose -f ./docker/docker-compose-spark.yml --env-file .env up -d
 	@echo '==========================================================='
+
+spark-produce:
+	@echo '__________________________________________________________'
+	@echo 'Producing fake events ...'
+	@echo '__________________________________________________________'
+	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-1 \
+		python \
+		/spark-scripts/event-producer.py
+
+spark-consume:
+	@echo '__________________________________________________________'
+	@echo 'Consuming fake events ...'
+	@echo '__________________________________________________________'
+	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-1 \
+		spark-submit \
+		/spark-scripts/event-consumer.py

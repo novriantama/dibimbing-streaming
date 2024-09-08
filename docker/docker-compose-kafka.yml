@@ -1,5 +1,5 @@
 services:
- kafka:
+ kafka-streaming:
   image: docker.io/bitnami/kafka:3.3
   container_name: ${KAFKA_CONTAINER_NAME}
   hostname: ${KAFKA_HOST}
@@ -22,7 +22,7 @@ services:
   container_name: ${KSQL_CONTAINER_NAME}
   hostname: ${KSQL_HOST}
   depends_on:
-   - kafka
+   - kafka-streaming
   ports:
    - "8088:8088"
   environment:
@@ -31,9 +31,9 @@ services:
 
  kafka-ui:
   image: provectuslabs/kafka-ui:v0.7.0
-  container_name: kafka-ui-assgnmnt
+  container_name: kafka-ui-streaming
   depends_on:
-   - kafka
+   - kafka-streaming
    - ksqldb
   ports:
    - "8083:8080"
@@ -42,19 +42,6 @@ services:
    - KAFKA_CLUSTERS_0_NAME=local
    - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=${KAFKA_HOST}:9092
    - KAFKA_CLUSTERS_0_KSQLDBSERVER=http://${KSQL_HOST}:8088
-
- kafka-schema-registry:
-    image: confluentinc/cp-schema-registry:latest 
-    container_name: ${SCHEMA_REG_CONTAINER_NAME}
-    hostname: ${SCHEMA_REG_HOST} 
-    depends_on:
-      - kafka
-    ports:
-      - "8081:8081" 
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: ${SCHEMA_REG_HOST} 
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092  
-      SCHEMA_REGISTRY_LISTENERS: http://${SCHEMA_REG_HOST}:8081
 
 networks:
  default:

@@ -14,6 +14,7 @@ services:
     volumes:
       - ../spark-scripts:/spark-scripts
       - ../scripts:/scripts
+      - ../tmp:/tmp
     ports:
       - ${SPARK_MASTER_UI}:8080
       - ${SPARK_MASTER_PORT}:7077
@@ -25,8 +26,8 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://${SPARK_MASTER_HOST_NAME}:${SPARK_MASTER_PORT}
-      - SPARK_WORKER_MEMORY=2G
-      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=6
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
@@ -34,6 +35,7 @@ services:
     volumes:
       - ../spark-scripts:/spark-scripts
       - ../scripts:/scripts
+      - ../tmp:/tmp
     depends_on:
       - streaming-spark-master
 
